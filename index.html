@@ -5,310 +5,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Property Scout</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+* { box-sizing: border-box; }
 body { margin: 0; }
 
 .ps-root {
-  --navy-deep: #101c33;
-  --navy: #182a4a;
-  --navy-light: #24406e;
-  --paper: #eef1f6;
-  --paper-dim: #b9c4d6;
-  --cyan: #7fc7d9;
-  --amber: #e2a33d;
-  --red: #d9705f;
-  --green: #6fb98f;
+  --ink: #16233d;
+  --ink-dim: #6b7a94;
+  --line: #dde3ec;
+  --panel: #f7f9fc;
+  --bg: #ffffff;
+  --cyan: #2b6f86;
+  --amber: #b9770e;
+  --red: #c1432f;
+  --green: #2f8f5b;
   font-family: 'Inter', sans-serif;
-  background:
-    linear-gradient(var(--navy-deep), var(--navy-deep)),
-    repeating-linear-gradient(0deg, rgba(127,199,217,0.06) 0px, rgba(127,199,217,0.06) 1px, transparent 1px, transparent 28px),
-    repeating-linear-gradient(90deg, rgba(127,199,217,0.06) 0px, rgba(127,199,217,0.06) 1px, transparent 1px, transparent 28px);
-  color: var(--paper);
+  background: var(--bg);
+  color: var(--ink);
   min-height: 100vh;
-  padding: 32px 20px 60px;
-  box-sizing: border-box;
-}
-.ps-root * { box-sizing: border-box; }
-
-.ps-header {
-  max-width: 980px;
-  margin: 0 auto 28px;
-  border-bottom: 1px solid var(--navy-light);
-  padding-bottom: 20px;
-}
-.ps-eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  margin-bottom: 6px;
-}
-.ps-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 30px;
-  margin: 0 0 6px;
-  letter-spacing: -0.01em;
-}
-.ps-sub {
-  color: var(--paper-dim);
-  font-size: 14px;
-  margin: 0;
-  max-width: 620px;
-  line-height: 1.5;
+  padding: 28px 20px 60px;
 }
 
-.ps-container { max-width: 980px; margin: 0 auto; }
+.ps-header { max-width: 1040px; margin: 0 auto 20px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.ps-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 4px; }
+.ps-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 27px; margin: 0 0 4px; letter-spacing: -0.01em; }
+.ps-sub { color: var(--ink-dim); font-size: 13.5px; margin: 0; max-width: 620px; line-height: 1.5; }
 
-.ps-add-card {
-  background: var(--navy);
-  border: 1px solid var(--navy-light);
-  border-radius: 4px;
-  padding: 18px;
-  margin-bottom: 28px;
-}
-.ps-add-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.ps-input {
-  flex: 1;
-  min-width: 220px;
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  color: var(--paper);
-  padding: 10px 12px;
-  border-radius: 3px;
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-}
-.ps-input::placeholder { color: var(--paper-dim); }
+.ps-container { max-width: 1040px; margin: 0 auto; }
+
+.ps-add-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; margin-bottom: 18px; }
+.ps-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.ps-input { flex: 1; min-width: 200px; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 9px 11px; border-radius: 4px; font-size: 13.5px; font-family: 'Inter', sans-serif; }
+.ps-input::placeholder { color: #9aa7bd; }
 .ps-input:focus { outline: none; border-color: var(--cyan); }
-.ps-input-nick { flex: 0 0 200px; min-width: 150px; }
+.ps-input-nick { flex: 0 0 190px; min-width: 140px; }
 
-.ps-btn {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border: 1px solid var(--cyan);
-  background: transparent;
-  color: var(--cyan);
-  padding: 10px 16px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-.ps-btn:hover { background: var(--cyan); color: var(--navy-deep); }
+.ps-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; border: 1px solid var(--cyan); background: #fff; color: var(--cyan); padding: 9px 14px; border-radius: 4px; cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+.ps-btn:hover { background: var(--cyan); color: #fff; }
 .ps-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 .ps-btn-amber { border-color: var(--amber); color: var(--amber); }
-.ps-btn-amber:hover { background: var(--amber); color: var(--navy-deep); }
+.ps-btn-amber:hover { background: var(--amber); color: #fff; }
 .ps-btn-red { border-color: var(--red); color: var(--red); }
-.ps-btn-red:hover { background: var(--red); color: var(--navy-deep); }
-.ps-btn-small { padding: 6px 10px; font-size: 11px; }
+.ps-btn-red:hover { background: var(--red); color: #fff; }
+.ps-btn-small { padding: 6px 10px; font-size: 10.5px; }
 
-.ps-empty {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--paper-dim);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  border: 1px dashed var(--navy-light);
-  border-radius: 4px;
-}
+.ps-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.ps-search { flex: 1; min-width: 180px; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 8px 11px; border-radius: 4px; font-size: 13px; }
+.ps-search:focus { outline: none; border-color: var(--cyan); }
+.ps-filter { background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 8px 10px; border-radius: 4px; font-size: 12.5px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; }
+.ps-count { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-dim); white-space: nowrap; }
 
-.ps-card {
-  position: relative;
-  background: var(--navy);
-  border: 1px solid var(--navy-light);
-  border-radius: 4px;
-  margin-bottom: 22px;
-  padding: 20px 22px 22px;
-}
-.ps-card::before, .ps-card::after,
-.ps-corner-tl, .ps-corner-br {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid var(--cyan);
-  opacity: 0.6;
-}
-.ps-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.ps-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.ps-empty { text-align: center; padding: 50px 20px; color: var(--ink-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; border: 1px dashed var(--line); border-radius: 6px; }
 
-.ps-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-.ps-card-idx {
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--cyan);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-}
-.ps-nick {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 19px;
-  font-weight: 600;
-  margin: 2px 0 4px;
-  background: transparent;
-  border: none;
-  color: var(--paper);
-  width: 100%;
-  padding: 0;
-}
-.ps-nick:focus { outline: none; border-bottom: 1px solid var(--cyan); }
-.ps-link {
-  font-size: 12px;
-  color: var(--cyan);
-  text-decoration: none;
-  font-family: 'IBM Plex Mono', monospace;
-  word-break: break-all;
-}
+.ps-list { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.ps-row { border-bottom: 1px solid var(--line); background: #fff; }
+.ps-row:last-child { border-bottom: none; }
+
+.ps-row-summary { display: grid; grid-template-columns: 34px 14px 1.4fr 1fr 24px 28px 28px; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; }
+.ps-row-summary:hover { background: var(--panel); }
+.ps-row-idx { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-dim); }
+.ps-dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-researching { background: var(--amber); }
+.dot-shortlisted { background: var(--green); }
+.dot-visited { background: var(--cyan); }
+.dot-rejected { background: var(--red); }
+.ps-row-nick { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-row-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-water-flag { font-size: 13px; text-align: center; }
+.ps-chevron { font-size: 12px; color: var(--ink-dim); text-align: center; transition: transform 0.15s; }
+.ps-chevron.open { transform: rotate(90deg); }
+.ps-row-del { background: none; border: none; color: #b9c2d4; cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 3px; }
+.ps-row-del:hover { color: #fff; background: var(--red); }
+
+.ps-detail { display: none; padding: 4px 14px 18px; background: var(--panel); border-top: 1px solid var(--line); }
+.ps-detail.open { display: block; }
+
+.ps-nick-edit { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; background: transparent; border: none; border-bottom: 1px dashed var(--line); color: var(--ink); padding: 4px 0; width: 100%; margin: 10px 0 2px; }
+.ps-nick-edit:focus { outline: none; border-bottom-color: var(--cyan); }
+.ps-link { font-size: 11.5px; color: var(--cyan); text-decoration: none; font-family: 'IBM Plex Mono', monospace; word-break: break-all; }
 .ps-link:hover { text-decoration: underline; }
 
-.ps-status-select {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  color: var(--paper);
-  padding: 7px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-}
-.ps-status-select.st-shortlisted { color: var(--green); border-color: var(--green); }
-.ps-status-select.st-visited { color: var(--cyan); border-color: var(--cyan); }
-.ps-status-select.st-rejected { color: var(--red); border-color: var(--red); }
-.ps-status-select.st-researching { color: var(--amber); border-color: var(--amber); }
+.ps-status-row { display: flex; justify-content: flex-end; margin: -30px 0 8px; }
+.ps-status-select { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 6px 9px; border-radius: 4px; cursor: pointer; }
 
-.ps-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-  margin: 16px 0;
-}
-.ps-field {
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  border-radius: 3px;
-  padding: 10px 12px;
-}
-.ps-field-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--paper-dim);
-  margin-bottom: 5px;
-}
-.ps-field-value {
-  font-size: 13.5px;
-  line-height: 1.4;
-  min-height: 18px;
-  outline: none;
-  cursor: text;
-}
-.ps-field-value:empty::before { content: '— click to fill —'; color: var(--paper-dim); font-style: italic; }
-.ps-field-value a { color: var(--cyan); }
+.ps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin: 10px 0; }
+.ps-field { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 9px 11px; }
+.ps-field-label { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+.ps-field-link-btn { color: var(--cyan); text-decoration: none; font-size: 11px; }
+.ps-field-value { font-size: 13px; line-height: 1.4; min-height: 16px; outline: none; cursor: text; }
+.ps-field-value:empty::before { content: '— click to fill —'; color: #b0b9cb; font-style: italic; }
 
-.ps-section-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--paper-dim);
-  margin: 18px 0 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.ps-section-label::after { content: ''; flex: 1; height: 1px; background: var(--navy-light); }
+.ps-section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; }
+.ps-section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 
-.ps-prompt-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-
-.ps-import-box {
-  width: 100%;
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  color: var(--paper);
-  padding: 10px 12px;
-  border-radius: 3px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  min-height: 60px;
-  resize: vertical;
-}
+.ps-prompt-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.ps-import-box { width: 100%; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 9px 11px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; min-height: 52px; resize: vertical; }
 .ps-import-box:focus { outline: none; border-color: var(--cyan); }
 
-.ps-notes {
-  width: 100%;
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  color: var(--paper);
-  padding: 10px 12px;
-  border-radius: 3px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13.5px;
-  min-height: 50px;
-  resize: vertical;
-}
+.ps-notes { width: 100%; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 9px 11px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; min-height: 44px; resize: vertical; }
 .ps-notes:focus { outline: none; border-color: var(--cyan); }
 
-.ps-custom-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.ps-custom-row input {
-  background: var(--navy-deep);
-  border: 1px solid var(--navy-light);
-  color: var(--paper);
-  padding: 8px 10px;
-  border-radius: 3px;
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-}
-.ps-custom-key { flex: 0 0 160px; }
+.ps-custom-row { display: flex; gap: 8px; margin-bottom: 6px; }
+.ps-custom-row input { background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 7px 9px; border-radius: 4px; font-size: 12.5px; font-family: 'Inter', sans-serif; }
+.ps-custom-key { flex: 0 0 150px; }
 .ps-custom-val { flex: 1; }
-.ps-custom-del {
-  background: transparent;
-  border: 1px solid var(--navy-light);
-  color: var(--paper-dim);
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 0 10px;
-  font-size: 14px;
-}
+.ps-custom-del { background: transparent; border: 1px solid var(--line); color: var(--ink-dim); border-radius: 4px; cursor: pointer; padding: 0 10px; font-size: 13px; }
 .ps-custom-del:hover { color: var(--red); border-color: var(--red); }
 
-.ps-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--navy-light);
-}
-.ps-status-msg {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--green);
-  min-height: 14px;
-}
-.ps-loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--paper-dim);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-}
+.ps-status-msg { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--green); min-height: 14px; margin-top: 6px; }
+.ps-loading { text-align: center; padding: 36px; color: var(--ink-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -317,16 +123,28 @@ body { margin: 0; }
   <div class="ps-header">
     <div class="ps-eyebrow">SITE SURVEY LOG</div>
     <h1 class="ps-title">Property Scout</h1>
-    <p class="ps-sub">Drop a Google Maps link for any property you're considering. Track commute times, nearby amenities, and area reputation — then keep adding detail as you qualify each one.</p>
+    <p class="ps-sub">Paste a Google Maps link to log a property. Click a row to see the full checklist and add research findings.</p>
   </div>
 
   <div class="ps-container">
     <div class="ps-add-card">
       <div class="ps-add-row">
         <input class="ps-input" id="psNewLink" type="text" placeholder="Paste Google Maps link…" />
-        <input class="ps-input ps-input-nick" id="psNewNick" type="text" placeholder="Nickname (e.g. DLF Phase 3 - 2BHK)" />
+        <input class="ps-input ps-input-nick" id="psNewNick" type="text" placeholder="Nickname" />
         <button class="ps-btn ps-btn-amber" onclick="psAddProperty()">+ Add property</button>
       </div>
+    </div>
+
+    <div class="ps-toolbar">
+      <input class="ps-search" id="psSearch" type="text" placeholder="Filter by nickname…" oninput="render()" />
+      <select class="ps-filter" id="psFilterStatus" onchange="render()">
+        <option value="">All statuses</option>
+        <option value="Researching">Researching</option>
+        <option value="Shortlisted">Shortlisted</option>
+        <option value="Visited">Visited</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+      <div class="ps-count" id="psCount"></div>
     </div>
 
     <div id="psList"><div class="ps-loading">Loading saved properties…</div></div>
@@ -344,12 +162,38 @@ body { margin: 0; }
     { key: 'waterlogging', label: 'Waterlogging History' },
   ];
   const STATUSES = ['Researching', 'Shortlisted', 'Visited', 'Rejected'];
+  const LS_PREFIX = 'propertyScout:';
+  const RISK_WORDS = /waterlog|flood|submerg|inundat|stuck|drain(age)? (issue|problem)|monsoon.*(risk|issue)/i;
+  const SAFE_WORDS = /\bno\b.*(waterlog|flood|history|record)|no (known|reported|significant) (waterlogging|flooding)|not (a )?flood/i;
+
   let properties = [];
+  let expandedId = null;
 
   function uid() { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-  const LS_PREFIX = 'propertyScout:';
+  function flattenValue(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (Array.isArray(v)) return v.map(flattenValue).filter(Boolean).join(', ');
+    if (typeof v === 'object') {
+      const priorityKeys = ['name', 'title', 'distance', 'time', 'duration', 'summary', 'text', 'description', 'value'];
+      const linkKeys = ['link', 'url', 'mapsLink', 'googleMapsLink', 'gmapsLink'];
+      const parts = [];
+      priorityKeys.forEach(k => { if (v[k]) parts.push(String(v[k])); });
+      Object.keys(v).forEach(k => {
+        if (priorityKeys.includes(k) || linkKeys.includes(k)) return;
+        if (v[k] !== null && v[k] !== undefined && v[k] !== '') parts.push(String(v[k]));
+      });
+      let linkPart = '';
+      linkKeys.forEach(k => { if (v[k] && !linkPart) linkPart = String(v[k]); });
+      let result = parts.join(' — ');
+      if (linkPart) result += (result ? ' ' : '') + linkPart;
+      return result.trim();
+    }
+    return String(v);
+  }
 
   async function loadAll() {
     try {
@@ -360,116 +204,62 @@ body { margin: 0; }
         try {
           const rec = localStorage.getItem(LS_PREFIX + id);
           if (rec) loaded.push(JSON.parse(rec));
-        } catch (e) { /* skip corrupt entry */ }
+        } catch (e) {}
       }
       properties = loaded;
-    } catch (e) {
-      properties = [];
-    }
+    } catch (e) { properties = []; }
     render();
   }
 
-  async function saveIndex() {
-    try {
-      localStorage.setItem(LS_PREFIX + 'index', JSON.stringify(properties.map(p => p.id)));
-    } catch (e) { console.error('index save failed', e); }
+  function saveIndex() {
+    try { localStorage.setItem(LS_PREFIX + 'index', JSON.stringify(properties.map(p => p.id))); }
+    catch (e) { console.error('index save failed', e); }
   }
-
-  async function saveProperty(p) {
-    try {
-      localStorage.setItem(LS_PREFIX + p.id, JSON.stringify(p));
-    } catch (e) { console.error('property save failed', e); }
+  function saveProperty(p) {
+    try { localStorage.setItem(LS_PREFIX + p.id, JSON.stringify(p)); }
+    catch (e) { console.error('property save failed', e); }
   }
-
-  async function deleteProperty(id) {
+  function deleteProperty(id) {
     try { localStorage.removeItem(LS_PREFIX + id); } catch (e) {}
     properties = properties.filter(p => p.id !== id);
-    await saveIndex();
+    saveIndex();
     render();
   }
 
-  window.psAddProperty = async function() {
+  window.psAddProperty = function() {
     const linkEl = document.getElementById('psNewLink');
     const nickEl = document.getElementById('psNewNick');
     const link = linkEl.value.trim();
     if (!link) { linkEl.focus(); return; }
-    const p = {
-      id: uid(),
-      link: link,
-      nickname: nickEl.value.trim() || 'Untitled property',
-      status: 'Researching',
-      fields: {},
-      custom: [],
-      notes: '',
-      createdAt: Date.now(),
-    };
+    const p = { id: uid(), link, nickname: nickEl.value.trim() || 'Untitled property', status: 'Researching', fields: {}, custom: [], notes: '', createdAt: Date.now() };
     properties.unshift(p);
-    linkEl.value = '';
-    nickEl.value = '';
-    await saveProperty(p);
-    await saveIndex();
+    linkEl.value = ''; nickEl.value = '';
+    saveProperty(p); saveIndex();
+    expandedId = p.id;
     render();
   };
 
-  window.psUpdateNick = async function(id, val) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.nickname = val;
-    await saveProperty(p);
-  };
-
-  window.psUpdateStatus = async function(id, val) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.status = val;
-    await saveProperty(p);
+  window.psToggleExpand = function(id) {
+    expandedId = (expandedId === id) ? null : id;
     render();
   };
 
-  window.psUpdateField = async function(id, key, val) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.fields[key] = val;
-    await saveProperty(p);
-  };
+  window.psUpdateNick = function(id, val) { const p = properties.find(x => x.id === id); if (!p) return; p.nickname = val; saveProperty(p); render(); };
+  window.psUpdateStatus = function(id, val) { const p = properties.find(x => x.id === id); if (!p) return; p.status = val; saveProperty(p); render(); };
+  window.psUpdateField = function(id, key, val) { const p = properties.find(x => x.id === id); if (!p) return; p.fields[key] = val; saveProperty(p); render(); };
+  window.psUpdateNotes = function(id, val) { const p = properties.find(x => x.id === id); if (!p) return; p.notes = val; saveProperty(p); };
+  window.psAddCustom = function(id) { const p = properties.find(x => x.id === id); if (!p) return; p.custom.push({ key: '', val: '' }); saveProperty(p); render(); };
+  window.psUpdateCustom = function(id, idx, field, val) { const p = properties.find(x => x.id === id); if (!p) return; p.custom[idx][field] = val; saveProperty(p); };
+  window.psDeleteCustom = function(id, idx) { const p = properties.find(x => x.id === id); if (!p) return; p.custom.splice(idx, 1); saveProperty(p); render(); };
 
-  window.psUpdateNotes = async function(id, val) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.notes = val;
-    await saveProperty(p);
-  };
-
-  window.psAddCustom = async function(id) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.custom.push({ key: '', val: '' });
-    await saveProperty(p);
-    render();
-  };
-
-  window.psUpdateCustom = async function(id, idx, field, val) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.custom[idx][field] = val;
-    await saveProperty(p);
-  };
-
-  window.psDeleteCustom = async function(id, idx) {
-    const p = properties.find(x => x.id === id);
-    if (!p) return;
-    p.custom.splice(idx, 1);
-    await saveProperty(p);
-    render();
-  };
-
-  window.psDelete = async function(id) {
-    if (confirm('Remove this property from your tracker?')) {
-      await deleteProperty(id);
+  window.psDelete = function(id, nickname) {
+    if (confirm('Remove "' + nickname + '" from your tracker? This cannot be undone.')) {
+      if (expandedId === id) expandedId = null;
+      deleteProperty(id);
     }
   };
 
-  window.psCopyPrompt = function(id, btn) {
+  window.psCopyPrompt = function(id) {
     const p = properties.find(x => x.id === id);
     if (!p) return;
     const prompt = 'Research this property for my tracker: ' + p.link + '\n\n' +
@@ -480,15 +270,12 @@ body { margin: 0; }
       '4. A quick review of the society/area reputation\n' +
       '5. Car travel time to the nearest mall\n' +
       '6. Has this area had waterlogging in the past (news search)\n\n' +
-      'Reply with a fenced JSON block with these exact keys: carTimeToCyberHub, walkingTimeToEurokids, nearestPark, areaReview, carTimeToMall, waterlogging.';
-    navigator.clipboard.writeText(prompt).then(() => {
-      showMsg(id, 'Prompt copied — paste it to Claude in chat');
-    }).catch(() => {
-      showMsg(id, 'Could not copy — select and copy manually');
-    });
+      'Reply with a fenced JSON block with these exact keys, all values as plain text strings (not nested objects): carTimeToCyberHub, walkingTimeToEurokids, nearestPark, areaReview, carTimeToMall, waterlogging.';
+    navigator.clipboard.writeText(prompt).then(() => showMsg(id, 'Prompt copied — paste it to Claude in chat'))
+      .catch(() => showMsg(id, 'Could not copy — select and copy manually'));
   };
 
-  window.psImport = async function(id) {
+  window.psImport = function(id) {
     const ta = document.getElementById('import_' + id);
     const raw = ta.value;
     const match = raw.match(/\{[\s\S]*\}/);
@@ -499,29 +286,43 @@ body { margin: 0; }
     if (!p) return;
     FIELD_DEFS.forEach(f => {
       if (data[f.key] !== undefined && data[f.key] !== null) {
-        p.fields[f.key] = String(data[f.key]);
+        p.fields[f.key] = flattenValue(data[f.key]);
       }
     });
-    await saveProperty(p);
+    saveProperty(p);
     ta.value = '';
-    showMsg(id, 'Fields updated from Claude\'s reply');
+    showMsg(id, "Fields updated from Claude's reply");
     render();
   };
 
   function showMsg(id, text) {
-    const el = document.getElementById('msg_' + id);
-    if (el) {
-      el.textContent = text;
-      setTimeout(() => { if (el) el.textContent = ''; }, 4000);
-    }
+    setTimeout(() => {
+      const el = document.getElementById('msg_' + id);
+      if (el) { el.textContent = text; setTimeout(() => { if (el) el.textContent = ''; }, 4000); }
+    }, 0);
+  }
+
+  function extractUrl(val) {
+    const m = (val || '').match(/https?:\/\/[^\s)]+/);
+    return m ? m[0] : null;
+  }
+
+  function waterFlag(p) {
+    const val = p.fields.waterlogging || '';
+    if (!val) return { icon: '—', title: 'Not yet researched' };
+    if (SAFE_WORDS.test(val)) return { icon: '✅', title: 'No significant waterlogging found' };
+    if (RISK_WORDS.test(val)) return { icon: '⚠️', title: 'Waterlogging history found' };
+    return { icon: '•', title: 'Researched — see details' };
   }
 
   function fieldToHtml(p, f) {
     const val = p.fields[f.key] || '';
-    const isLink = f.key === 'nearestPark' && /https?:\/\//.test(val);
+    const url = extractUrl(val);
     return '<div class="ps-field">' +
-      '<div class="ps-field-label">' + esc(f.label) + '</div>' +
-      '<div class="ps-field-value" contenteditable="true" data-id="' + p.id + '" data-key="' + f.key + '" ' +
+      '<div class="ps-field-label"><span>' + esc(f.label) + '</span>' +
+      (url ? '<a class="ps-field-link-btn" href="' + esc(url) + '" target="_blank" rel="noopener">↗ open</a>' : '') +
+      '</div>' +
+      '<div class="ps-field-value" contenteditable="true" ' +
       'onblur="psUpdateField(\'' + p.id + '\', \'' + f.key + '\', this.innerText.trim())">' + esc(val) + '</div>' +
       '</div>';
   }
@@ -529,63 +330,80 @@ body { margin: 0; }
   function customToHtml(p) {
     return p.custom.map((c, idx) =>
       '<div class="ps-custom-row">' +
-      '<input class="ps-custom-key" placeholder="Detail (e.g. Price)" value="' + esc(c.key) + '" ' +
-      'onblur="psUpdateCustom(\'' + p.id + '\', ' + idx + ', \'key\', this.value)" />' +
-      '<input class="ps-custom-val" placeholder="Value" value="' + esc(c.val) + '" ' +
-      'onblur="psUpdateCustom(\'' + p.id + '\', ' + idx + ', \'val\', this.value)" />' +
+      '<input class="ps-custom-key" placeholder="Detail (e.g. Price)" value="' + esc(c.key) + '" onblur="psUpdateCustom(\'' + p.id + '\', ' + idx + ', \'key\', this.value)" />' +
+      '<input class="ps-custom-val" placeholder="Value" value="' + esc(c.val) + '" onblur="psUpdateCustom(\'' + p.id + '\', ' + idx + ', \'val\', this.value)" />' +
       '<button class="ps-custom-del" onclick="psDeleteCustom(\'' + p.id + '\', ' + idx + ')" aria-label="Remove detail">×</button>' +
       '</div>'
     ).join('');
   }
 
-  function cardToHtml(p, i) {
-    const statusClass = 'st-' + p.status.toLowerCase();
-    return '<div class="ps-card">' +
-      '<div class="ps-card-head">' +
-        '<div style="flex:1; min-width:200px;">' +
-          '<div class="ps-card-idx">SITE ' + String(i + 1).padStart(2, '0') + '</div>' +
-          '<div class="ps-nick" contenteditable="true" onblur="psUpdateNick(\'' + p.id + '\', this.innerText.trim())">' + esc(p.nickname) + '</div>' +
-          '<a class="ps-link" href="' + esc(p.link) + '" target="_blank" rel="noopener">' + esc(p.link) + '</a>' +
-        '</div>' +
-        '<select class="ps-status-select ' + statusClass + '" onchange="psUpdateStatus(\'' + p.id + '\', this.value)">' +
+  function rowToHtml(p, i) {
+    const isOpen = expandedId === p.id;
+    const wf = waterFlag(p);
+    const cyberChip = p.fields.carTimeToCyberHub || '—';
+
+    const summary = '<div class="ps-row-summary" onclick="psToggleExpand(\'' + p.id + '\')">' +
+      '<div class="ps-row-idx">' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<div class="ps-dot dot-' + p.status.toLowerCase() + '" title="' + p.status + '"></div>' +
+      '<div class="ps-row-nick">' + esc(p.nickname) + '</div>' +
+      '<div class="ps-row-chip" title="Car time to Cyber Hub">' + esc(cyberChip) + '</div>' +
+      '<div class="ps-water-flag" title="' + esc(wf.title) + '">' + wf.icon + '</div>' +
+      '<div class="ps-chevron' + (isOpen ? ' open' : '') + '">▶</div>' +
+      '<button class="ps-row-del" onclick="event.stopPropagation(); psDelete(\'' + p.id + '\', ' + JSON.stringify(p.nickname) + ')" aria-label="Delete">🗑</button>' +
+      '</div>';
+
+    const detail = '<div class="ps-detail' + (isOpen ? ' open' : '') + '">' +
+      '<input class="ps-nick-edit" value="' + esc(p.nickname) + '" onblur="psUpdateNick(\'' + p.id + '\', this.value.trim())" />' +
+      '<a class="ps-link" href="' + esc(p.link) + '" target="_blank" rel="noopener">' + esc(p.link) + '</a>' +
+      '<div class="ps-status-row">' +
+        '<select class="ps-status-select" onchange="psUpdateStatus(\'' + p.id + '\', this.value)">' +
           STATUSES.map(s => '<option value="' + s + '"' + (s === p.status ? ' selected' : '') + '>' + s + '</option>').join('') +
         '</select>' +
       '</div>' +
-
       '<div class="ps-grid">' + FIELD_DEFS.map(f => fieldToHtml(p, f)).join('') + '</div>' +
 
       '<div class="ps-section-label">Research with Claude</div>' +
-      '<div class="ps-prompt-row">' +
-        '<button class="ps-btn ps-btn-small" onclick="psCopyPrompt(\'' + p.id + '\', this)">Copy research prompt</button>' +
-      '</div>' +
+      '<div class="ps-prompt-row"><button class="ps-btn ps-btn-small" onclick="psCopyPrompt(\'' + p.id + '\')">Copy research prompt</button></div>' +
       '<textarea class="ps-import-box" id="import_' + p.id + '" placeholder="Paste Claude\'s reply here, then click Import…"></textarea>' +
-      '<div class="ps-prompt-row" style="margin-top:8px;">' +
-        '<button class="ps-btn ps-btn-small" onclick="psImport(\'' + p.id + '\')">Import into fields</button>' +
-      '</div>' +
+      '<div class="ps-prompt-row" style="margin-top:8px;"><button class="ps-btn ps-btn-small" onclick="psImport(\'' + p.id + '\')">Import into fields</button></div>' +
 
       '<div class="ps-section-label">Additional details</div>' +
-      '<div id="custom_' + p.id + '">' + customToHtml(p) + '</div>' +
+      '<div>' + customToHtml(p) + '</div>' +
       '<button class="ps-btn ps-btn-small" onclick="psAddCustom(\'' + p.id + '\')">+ Add detail</button>' +
 
       '<div class="ps-section-label">Notes</div>' +
       '<textarea class="ps-notes" placeholder="Anything else worth remembering…" onblur="psUpdateNotes(\'' + p.id + '\', this.value)">' + esc(p.notes) + '</textarea>' +
 
-      '<div class="ps-card-footer">' +
-        '<div class="ps-status-msg" id="msg_' + p.id + '"></div>' +
-        '<button class="ps-btn ps-btn-red ps-btn-small" onclick="psDelete(\'' + p.id + '\')">Remove</button>' +
-      '</div>' +
+      '<div class="ps-status-msg" id="msg_' + p.id + '"></div>' +
     '</div>';
+
+    return '<div class="ps-row">' + summary + detail + '</div>';
   }
 
   function render() {
     const list = document.getElementById('psList');
+    const countEl = document.getElementById('psCount');
+    const searchVal = (document.getElementById('psSearch').value || '').toLowerCase();
+    const statusVal = document.getElementById('psFilterStatus').value;
+
+    let visible = properties;
+    if (searchVal) visible = visible.filter(p => p.nickname.toLowerCase().includes(searchVal));
+    if (statusVal) visible = visible.filter(p => p.status === statusVal);
+
+    countEl.textContent = visible.length + ' of ' + properties.length + ' shown';
+
     if (properties.length === 0) {
       list.innerHTML = '<div class="ps-empty">No properties logged yet.<br/>Paste a Google Maps link above to start your first site survey.</div>';
       return;
     }
-    list.innerHTML = properties.map((p, i) => cardToHtml(p, i)).join('');
+    if (visible.length === 0) {
+      list.innerHTML = '<div class="ps-empty">No properties match this filter.</div>';
+      return;
+    }
+    list.innerHTML = '<div class="ps-list">' + visible.map((p, i) => rowToHtml(p, i)).join('') + '</div>';
   }
 
+  window.render = render;
   loadAll();
 })();
 </script>
