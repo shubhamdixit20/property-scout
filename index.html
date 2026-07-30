@@ -11,8 +11,8 @@
 body { margin: 0; }
 
 .ps-root {
-  --ink: #16233d;
-  --ink-dim: #6b7a94;
+  --ink: #000000;
+  --ink-dim: #5a6472;
   --line: #dde3ec;
   --panel: #f7f9fc;
   --bg: #ffffff;
@@ -71,7 +71,7 @@ body { margin: 0; }
 .dot-visited { background: var(--cyan); }
 .dot-rejected { background: var(--red); }
 .ps-row-nick { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ps-row-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-row-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ps-water-flag { font-size: 13px; text-align: center; }
 .ps-chevron { font-size: 12px; color: var(--ink-dim); text-align: center; transition: transform 0.15s; }
 .ps-chevron.open { transform: rotate(90deg); }
@@ -115,6 +115,15 @@ body { margin: 0; }
 
 .ps-status-msg { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--green); min-height: 14px; margin-top: 6px; }
 .ps-loading { text-align: center; padding: 36px; color: var(--ink-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+
+.ps-storage-bar { display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-dim); margin-bottom: 14px; flex-wrap: wrap; }
+.ps-storage-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.ps-storage-ok { background: var(--green); }
+.ps-storage-off { background: var(--red); }
+.ps-storage-link { color: var(--cyan); cursor: pointer; text-decoration: underline; background: none; border: none; font-family: inherit; font-size: inherit; padding: 0; }
+.ps-settings-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ps-settings-panel input { flex: 1; min-width: 260px; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 8px 10px; border-radius: 4px; font-size: 12.5px; font-family: 'IBM Plex Mono', monospace; }
+.ps-error-banner { background: #fdecea; border: 1px solid var(--red); color: var(--red); padding: 10px 14px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -134,6 +143,9 @@ body { margin: 0; }
         <button class="ps-btn ps-btn-amber" onclick="psAddProperty()">+ Add property</button>
       </div>
     </div>
+
+    <div id="psStorageBar"></div>
+    <div id="psSettingsPanel"></div>
 
     <div class="ps-toolbar">
       <input class="ps-search" id="psSearch" type="text" placeholder="Filter by nickname…" oninput="render()" />
@@ -168,9 +180,109 @@ body { margin: 0; }
 
   let properties = [];
   let expandedId = null;
+  let settingsOpen = false;
+  let connectionOk = false;
+  let loadError = null;
 
   function uid() { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+  function getScriptUrl() { try { return localStorage.getItem(LS_PREFIX + 'scriptUrl') || ''; } catch (e) { return ''; } }
+  function setScriptUrl(url) { try { localStorage.setItem(LS_PREFIX + 'scriptUrl', url); } catch (e) {} }
+
+  async function apiList() {
+    const url = getScriptUrl();
+    if (!url) return [];
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Sheet returned an error');
+    return data.properties || [];
+  }
+
+  function apiSave(p) {
+    const url = getScriptUrl();
+    if (!url) return Promise.resolve();
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'save', property: p })
+    }).then(res => { if (!res.ok) throw new Error('Save failed'); });
+  }
+
+  function apiDelete(id) {
+    const url = getScriptUrl();
+    if (!url) return Promise.resolve();
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'delete', id: id })
+    }).then(res => { if (!res.ok) throw new Error('Delete failed'); });
+  }
+
+  function saveProperty(p) {
+    apiSave(p).then(() => { connectionOk = true; renderStorageBar(); })
+      .catch(err => { console.error(err); connectionOk = false; showMsg(p.id, 'Sync failed — check your connection'); renderStorageBar(); });
+  }
+
+  function deleteProperty(id) {
+    properties = properties.filter(p => p.id !== id);
+    render();
+    apiDelete(id).then(() => { connectionOk = true; renderStorageBar(); })
+      .catch(err => { console.error(err); connectionOk = false; renderStorageBar(); });
+  }
+
+  async function loadAll() {
+    const url = getScriptUrl();
+    if (!url) { properties = []; loadError = null; connectionOk = false; render(); return; }
+    document.getElementById('psList').innerHTML = '<div class="ps-loading">Loading from your Google Sheet…</div>';
+    try {
+      properties = await apiList();
+      connectionOk = true;
+      loadError = null;
+    } catch (e) {
+      connectionOk = false;
+      loadError = e.message || 'Could not reach the sheet';
+    }
+    render();
+  }
+
+  window.psToggleSettings = function() { settingsOpen = !settingsOpen; renderStorageBar(); };
+
+  window.psSaveScriptUrl = function() {
+    const val = document.getElementById('psScriptUrlInput').value.trim();
+    if (!val) return;
+    setScriptUrl(val);
+    settingsOpen = false;
+    loadAll();
+  };
+
+  function renderStorageBar() {
+    const bar = document.getElementById('psStorageBar');
+    const panel = document.getElementById('psSettingsPanel');
+    const url = getScriptUrl();
+
+    if (!url) {
+      bar.innerHTML = '<span class="ps-storage-dot ps-storage-off"></span> Not connected to a Google Sheet — data won\'t be saved. ' +
+        '<button class="ps-storage-link" onclick="psToggleSettings()">Connect now</button>';
+    } else if (connectionOk) {
+      bar.innerHTML = '<span class="ps-storage-dot ps-storage-ok"></span> Connected to your Google Sheet. ' +
+        '<button class="ps-storage-link" onclick="psToggleSettings()">Change</button>';
+    } else {
+      bar.innerHTML = '<span class="ps-storage-dot ps-storage-off"></span> Can\'t reach the sheet' + (loadError ? ' (' + esc(loadError) + ')' : '') + '. ' +
+        '<button class="ps-storage-link" onclick="loadAll()">Retry</button> · ' +
+        '<button class="ps-storage-link" onclick="psToggleSettings()">Change URL</button>';
+    }
+
+    if (settingsOpen) {
+      panel.innerHTML = '<input id="psScriptUrlInput" type="text" placeholder="Paste your Apps Script Web App URL…" value="' + esc(url) + '" />' +
+        '<button class="ps-btn ps-btn-small" onclick="psSaveScriptUrl()">Save & connect</button>';
+    } else {
+      panel.innerHTML = '';
+    }
+  }
+
+  window.loadAll = loadAll;
 
   function flattenValue(v) {
     if (v === null || v === undefined) return '';
@@ -195,37 +307,6 @@ body { margin: 0; }
     return String(v);
   }
 
-  async function loadAll() {
-    try {
-      const idxRaw = localStorage.getItem(LS_PREFIX + 'index');
-      const ids = idxRaw ? JSON.parse(idxRaw) : [];
-      const loaded = [];
-      for (const id of ids) {
-        try {
-          const rec = localStorage.getItem(LS_PREFIX + id);
-          if (rec) loaded.push(JSON.parse(rec));
-        } catch (e) {}
-      }
-      properties = loaded;
-    } catch (e) { properties = []; }
-    render();
-  }
-
-  function saveIndex() {
-    try { localStorage.setItem(LS_PREFIX + 'index', JSON.stringify(properties.map(p => p.id))); }
-    catch (e) { console.error('index save failed', e); }
-  }
-  function saveProperty(p) {
-    try { localStorage.setItem(LS_PREFIX + p.id, JSON.stringify(p)); }
-    catch (e) { console.error('property save failed', e); }
-  }
-  function deleteProperty(id) {
-    try { localStorage.removeItem(LS_PREFIX + id); } catch (e) {}
-    properties = properties.filter(p => p.id !== id);
-    saveIndex();
-    render();
-  }
-
   window.psAddProperty = function() {
     const linkEl = document.getElementById('psNewLink');
     const nickEl = document.getElementById('psNewNick');
@@ -234,7 +315,7 @@ body { margin: 0; }
     const p = { id: uid(), link, nickname: nickEl.value.trim() || 'Untitled property', status: 'Researching', fields: {}, custom: [], notes: '', createdAt: Date.now() };
     properties.unshift(p);
     linkEl.value = ''; nickEl.value = '';
-    saveProperty(p); saveIndex();
+    saveProperty(p);
     expandedId = p.id;
     render();
   };
@@ -252,8 +333,10 @@ body { margin: 0; }
   window.psUpdateCustom = function(id, idx, field, val) { const p = properties.find(x => x.id === id); if (!p) return; p.custom[idx][field] = val; saveProperty(p); };
   window.psDeleteCustom = function(id, idx) { const p = properties.find(x => x.id === id); if (!p) return; p.custom.splice(idx, 1); saveProperty(p); render(); };
 
-  window.psDelete = function(id, nickname) {
-    if (confirm('Remove "' + nickname + '" from your tracker? This cannot be undone.')) {
+  window.psDelete = function(id) {
+    const p = properties.find(x => x.id === id);
+    const label = p ? p.nickname : 'this property';
+    if (confirm('Remove "' + label + '" from your tracker? This cannot be undone.')) {
       if (expandedId === id) expandedId = null;
       deleteProperty(id);
     }
@@ -302,6 +385,24 @@ body { margin: 0; }
     }, 0);
   }
 
+  function extractDuration(val) {
+    if (!val) return null;
+    const m = val.match(/(\d+)\s*[-–to]{0,4}\s*(\d+)?\s*min/i);
+    if (!m) return null;
+    return m[2] ? (m[1] + '-' + m[2] + ' min') : (m[1] + ' min');
+  }
+
+  function shortChip(p) {
+    const parts = [];
+    const cyber = extractDuration(p.fields.carTimeToCyberHub);
+    const euro = extractDuration(p.fields.walkingTimeToEurokids);
+    if (cyber) parts.push('CyberHub ' + cyber);
+    if (euro) parts.push('Eurokids ' + euro);
+    if (parts.length) return parts.join(', ');
+    if (p.fields.carTimeToCyberHub) return p.fields.carTimeToCyberHub.slice(0, 28) + (p.fields.carTimeToCyberHub.length > 28 ? '…' : '');
+    return '—';
+  }
+
   function extractUrl(val) {
     const m = (val || '').match(/https?:\/\/[^\s)]+/);
     return m ? m[0] : null;
@@ -340,7 +441,7 @@ body { margin: 0; }
   function rowToHtml(p, i) {
     const isOpen = expandedId === p.id;
     const wf = waterFlag(p);
-    const cyberChip = p.fields.carTimeToCyberHub || '—';
+    const cyberChip = shortChip(p);
 
     const summary = '<div class="ps-row-summary" onclick="psToggleExpand(\'' + p.id + '\')">' +
       '<div class="ps-row-idx">' + String(i + 1).padStart(2, '0') + '</div>' +
@@ -349,7 +450,7 @@ body { margin: 0; }
       '<div class="ps-row-chip" title="Car time to Cyber Hub">' + esc(cyberChip) + '</div>' +
       '<div class="ps-water-flag" title="' + esc(wf.title) + '">' + wf.icon + '</div>' +
       '<div class="ps-chevron' + (isOpen ? ' open' : '') + '">▶</div>' +
-      '<button class="ps-row-del" onclick="event.stopPropagation(); psDelete(\'' + p.id + '\', ' + JSON.stringify(p.nickname) + ')" aria-label="Delete">🗑</button>' +
+      '<button class="ps-row-del" onclick="event.stopPropagation(); psDelete(\'' + p.id + '\')" aria-label="Delete">🗑</button>' +
       '</div>';
 
     const detail = '<div class="ps-detail' + (isOpen ? ' open' : '') + '">' +
@@ -381,10 +482,22 @@ body { margin: 0; }
   }
 
   function render() {
+    renderStorageBar();
     const list = document.getElementById('psList');
     const countEl = document.getElementById('psCount');
     const searchVal = (document.getElementById('psSearch').value || '').toLowerCase();
     const statusVal = document.getElementById('psFilterStatus').value;
+
+    if (!getScriptUrl()) {
+      list.innerHTML = '<div class="ps-empty">Connect a Google Sheet above to start saving properties.</div>';
+      countEl.textContent = '';
+      return;
+    }
+    if (loadError) {
+      list.innerHTML = '<div class="ps-error-banner">Couldn\'t load your data: ' + esc(loadError) + '</div>';
+      countEl.textContent = '';
+      return;
+    }
 
     let visible = properties;
     if (searchVal) visible = visible.filter(p => p.nickname.toLowerCase().includes(searchVal));
