@@ -379,8 +379,9 @@ body { margin: 0; }
       '3. Nearest park, with its Google Maps link\n' +
       '4. A quick review of the society/area reputation\n' +
       '5. Car travel time to the nearest mall\n' +
-      '6. Has this area had waterlogging in the past (news search)\n\n' +
-      'Reply with a fenced JSON block with these exact keys, all values as plain text strings (not nested objects): carTimeToCyberHub, walkingTimeToEurokids, nearestPark, areaReview, carTimeToMall, waterlogging.';
+      '6. Has this area had waterlogging in the past (news search)\n' +
+      '7. Resolve the exact latitude/longitude of the pin (fetch the link if it\'s a shortened maps.app.goo.gl link) so I can plot it on my map\n\n' +
+      'Reply with a fenced JSON block with these exact keys, all values as plain text strings (not nested objects): carTimeToCyberHub, walkingTimeToEurokids, nearestPark, areaReview, carTimeToMall, waterlogging, coordinates (format: "lat, lng").';
     navigator.clipboard.writeText(prompt).then(() => showMsg(id, 'Prompt copied — paste it to Claude in chat'))
       .catch(() => showMsg(id, 'Could not copy — select and copy manually'));
   };
@@ -399,6 +400,12 @@ body { margin: 0; }
         p.fields[f.key] = flattenValue(data[f.key]);
       }
     });
+    if (data.coordinates !== undefined && data.coordinates !== null) {
+      p.fields.coordinates = flattenValue(data.coordinates);
+    }
+    if (data.lat !== undefined && data.lng !== undefined) {
+      p.fields.coordinates = data.lat + ', ' + data.lng;
+    }
     saveProperty(p);
     ta.value = '';
     showMsg(id, "Fields updated from Claude's reply");
@@ -569,15 +576,6 @@ body { margin: 0; }
     { name:"Sector 55-56 (Rapid Metro)", lat:28.4238, lng:77.0975 },
     { name:"Sector 53-54 (Rapid Metro)", lat:28.4415, lng:77.1035 },
   ];
-  const MARKETS = [
-    { name:"Galleria Market", lat:28.4675, lng:77.0805 },
-    { name:"HUDA Market Sector 56", lat:28.4245, lng:77.1000 },
-  ];
-  const PARKS_REF = [
-    { name:"Leisure Valley Park (Sector 29)", lat:28.4610, lng:77.0660 },
-    { name:"Tau Devi Lal Bio Diversity Park", lat:28.4500, lng:77.0530 },
-    { name:"Aravalli Biodiversity Park", lat:28.4790, lng:77.0980 },
-  ];
   const STATUS_PIN_COLORS = { researching:'#b9770e', shortlisted:'#2f8f5b', visited:'#2b6f86', rejected:'#c1432f' };
 
   let psMap = null;
@@ -591,8 +589,11 @@ body { margin: 0; }
   }
 
   function psExtractLatLng(p) {
+    const coordField = (p.fields && p.fields.coordinates) || '';
+    let m = coordField.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
     const link = p.link || '';
-    let m = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    m = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
     m = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
     if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
@@ -619,8 +620,6 @@ body { margin: 0; }
     ]);
     psMapLayers['🧒 EuroKids'] = L.layerGroup(EUROKIDS.map(e => L.marker([e.lat, e.lng], { icon: pmPinIcon('🧒', '#e2a33d') }).bindPopup('<b>🧒 ' + e.name + '</b>')));
     psMapLayers['🚇 Metro'] = L.layerGroup(METRO.map(m => L.marker([m.lat, m.lng], { icon: pmPinIcon('🚇', '#6a3fa0') }).bindPopup('<b>🚇 ' + m.name + '</b>')));
-    psMapLayers['🛒 Markets'] = L.layerGroup(MARKETS.map(m => L.marker([m.lat, m.lng], { icon: pmPinIcon('🛒', '#2b6f86') }).bindPopup('<b>🛒 ' + m.name + '</b>')));
-    psMapLayers['🌳 Parks'] = L.layerGroup(PARKS_REF.map(p => L.marker([p.lat, p.lng], { icon: pmPinIcon('🌳', '#2f8f5b') }).bindPopup('<b>🌳 ' + p.name + '</b>')));
     psPropertyLayer = L.layerGroup();
     psMapLayers['📍 Properties'] = psPropertyLayer;
 
