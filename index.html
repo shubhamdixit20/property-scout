@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Property Scout</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
@@ -124,6 +126,17 @@ body { margin: 0; }
 .ps-settings-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ps-settings-panel input { flex: 1; min-width: 260px; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 8px 10px; border-radius: 4px; font-size: 12.5px; font-family: 'IBM Plex Mono', monospace; }
 .ps-error-banner { background: #fdecea; border: 1px solid var(--red); color: var(--red); padding: 10px 14px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px; }
+
+.ps-tabbar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.ps-tab { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.03em; background: none; border: none; color: var(--ink-dim); padding: 10px 6px; margin-right: 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+.ps-tab.active { color: var(--ink); border-bottom-color: var(--amber); font-weight: 600; }
+
+#psMap { height: 560px; border: 1px solid var(--line); border-radius: 6px; }
+.ps-map-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.ps-map-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--ink-dim); padding: 5px 11px; cursor: pointer; }
+.ps-map-chip.on { border-color: var(--ink); background: var(--ink); color: #fff; }
+.ps-map-note { font-size: 11.5px; color: var(--ink-dim); margin-top: 10px; line-height: 1.5; }
+.ps-map-pin { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); }
 </style>
 </head>
 <body>
@@ -136,6 +149,12 @@ body { margin: 0; }
   </div>
 
   <div class="ps-container">
+    <div class="ps-tabbar">
+      <button class="ps-tab active" id="psTabProperties">📋 Properties</button>
+      <button class="ps-tab" id="psTabMap">🗺️ Map</button>
+    </div>
+
+    <div id="psPanelProperties">
     <div class="ps-add-card">
       <div class="ps-add-row">
         <input class="ps-input" id="psNewLink" type="text" placeholder="Paste Google Maps link…" />
@@ -160,6 +179,13 @@ body { margin: 0; }
     </div>
 
     <div id="psList"><div class="ps-loading">Loading saved properties…</div></div>
+    </div>
+
+    <div id="psPanelMap" style="display:none;">
+      <div class="ps-map-chips" id="psMapChips"></div>
+      <div id="psMap"></div>
+      <p class="ps-map-note">Pins only appear for properties whose Google Maps link contains coordinates (most full-length Maps links do; shortened <code>maps.app.goo.gl</code> links usually don't). Properties without a plottable link still show up in the Properties tab.</p>
+    </div>
   </div>
 </div>
 
@@ -175,6 +201,7 @@ body { margin: 0; }
   ];
   const STATUSES = ['Researching', 'Shortlisted', 'Visited', 'Rejected'];
   const LS_PREFIX = 'propertyScout:';
+  const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywuCzx0bT_IAmGOlIz49DeFyCAZwTGCZ916lTKFISg34g3egHYAK3d-igzjacoqMG5TA/exec';
   const RISK_WORDS = /waterlog|flood|submerg|inundat|stuck|drain(age)? (issue|problem)|monsoon.*(risk|issue)/i;
   const SAFE_WORDS = /\bno\b.*(waterlog|flood|history|record)|no (known|reported|significant) (waterlogging|flooding)|not (a )?flood/i;
 
@@ -187,7 +214,7 @@ body { margin: 0; }
   function uid() { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-  function getScriptUrl() { try { return localStorage.getItem(LS_PREFIX + 'scriptUrl') || ''; } catch (e) { return ''; } }
+  function getScriptUrl() { try { return localStorage.getItem(LS_PREFIX + 'scriptUrl') || DEFAULT_SCRIPT_URL; } catch (e) { return DEFAULT_SCRIPT_URL; } }
   function setScriptUrl(url) { try { localStorage.setItem(LS_PREFIX + 'scriptUrl', url); } catch (e) {} }
 
   async function apiList() {
@@ -514,7 +541,136 @@ body { margin: 0; }
       return;
     }
     list.innerHTML = '<div class="ps-list">' + visible.map((p, i) => rowToHtml(p, i)).join('') + '</div>';
+    if (psMapInitialized) psRenderPropertyPins();
   }
+
+  /* ---- Map tab: reference layers (Office, EuroKids, Metro, Markets, Parks) ---- */
+  const OFFICE = { name: "Rockwell Automation (DLF Cyber Hub)", lat: 28.4950, lng: 77.0890 };
+  const EUROKIDS = [
+    { name:"EuroKids Sector 40 (Mohyal Colony)", lat:28.4500, lng:77.0560 },
+    { name:"EuroKids Sector 46 (Huda Colony)", lat:28.4419, lng:77.0583 },
+    { name:"EuroKids Sector 52 (Ardee City)", lat:28.4358, lng:77.0811 },
+    { name:"EuroKids Sector 49 (Sispal Vihar, Sohna Rd)", lat:28.4100, lng:77.0500 },
+    { name:"EuroKids Sector 50 (Nirvana Country)", lat:28.4162, lng:77.0628 },
+    { name:"EuroKids DLF Phase 2 (Sector 25)", lat:28.4780, lng:77.0890 },
+    { name:"EuroKids Sushant Lok 1", lat:28.4689, lng:77.0874 },
+    { name:"EuroKids Sector 21", lat:28.5064, lng:77.0673 },
+    { name:"EuroKids Palam Vihar (Block C2)", lat:28.5130, lng:77.0350 },
+    { name:"EuroKids New Palam Vihar Phase 2 (Sector 112)", lat:28.5147, lng:77.0143 },
+    { name:"EuroKids Sector 37C", lat:28.4552, lng:76.9794 },
+    { name:"EuroKids Sector 82 (Vatika Primrose Avenue)", lat:28.3990, lng:76.9640 },
+    { name:"EuroKids Dwarka Expressway (Daulatabad)", lat:28.4952, lng:76.9921 },
+  ];
+  const METRO = [
+    { name:"Millennium City Centre (Yellow Line)", lat:28.4593, lng:77.0727 },
+    { name:"IFFCO Chowk (Yellow Line)", lat:28.4722, lng:77.0722 },
+    { name:"MG Road (Yellow Line)", lat:28.4795, lng:77.0800 },
+    { name:"Sector 42-43 (Rapid Metro)", lat:28.4530, lng:77.0930 },
+    { name:"Sector 55-56 (Rapid Metro)", lat:28.4238, lng:77.0975 },
+    { name:"Sector 53-54 (Rapid Metro)", lat:28.4415, lng:77.1035 },
+  ];
+  const MARKETS = [
+    { name:"Galleria Market", lat:28.4675, lng:77.0805 },
+    { name:"HUDA Market Sector 56", lat:28.4245, lng:77.1000 },
+  ];
+  const PARKS_REF = [
+    { name:"Leisure Valley Park (Sector 29)", lat:28.4610, lng:77.0660 },
+    { name:"Tau Devi Lal Bio Diversity Park", lat:28.4500, lng:77.0530 },
+    { name:"Aravalli Biodiversity Park", lat:28.4790, lng:77.0980 },
+  ];
+  const STATUS_PIN_COLORS = { researching:'#b9770e', shortlisted:'#2f8f5b', visited:'#2b6f86', rejected:'#c1432f' };
+
+  let psMap = null;
+  let psMapLayers = {};
+  let psPropertyLayer = null;
+  let psMapInitialized = false;
+
+  function pmPinIcon(em, bg, size) {
+    size = size || 26;
+    return L.divIcon({ className: '', html: '<div class="ps-map-pin" style="background:' + bg + '">' + em + '</div>', iconSize: [size, size], iconAnchor: [size/2, size/2] });
+  }
+
+  function psExtractLatLng(p) {
+    const link = p.link || '';
+    let m = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+    m = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+    m = link.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+    const customCoord = (p.custom || []).find(c => /lat|coord/i.test(c.key || '') && /-?\d+\.\d+\s*,\s*-?\d+\.\d+/.test(c.val || ''));
+    if (customCoord) {
+      const cm = customCoord.val.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+      if (cm) return { lat: parseFloat(cm[1]), lng: parseFloat(cm[2]) };
+    }
+    return null;
+  }
+
+  function psInitMap() {
+    if (psMapInitialized) return;
+    psMapInitialized = true;
+    psMap = L.map('psMap').setView([28.468, 77.06], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, subdomains: 'abc', attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(psMap);
+
+    psMapLayers['🏢 Office'] = L.layerGroup([
+      L.marker([OFFICE.lat, OFFICE.lng], { icon: pmPinIcon('🏢', '#000000', 32) }).bindPopup('<b>🏢 ' + OFFICE.name + '</b><br><span style="color:#5a6472;">Your anchor point</span>')
+    ]);
+    psMapLayers['🧒 EuroKids'] = L.layerGroup(EUROKIDS.map(e => L.marker([e.lat, e.lng], { icon: pmPinIcon('🧒', '#e2a33d') }).bindPopup('<b>🧒 ' + e.name + '</b>')));
+    psMapLayers['🚇 Metro'] = L.layerGroup(METRO.map(m => L.marker([m.lat, m.lng], { icon: pmPinIcon('🚇', '#6a3fa0') }).bindPopup('<b>🚇 ' + m.name + '</b>')));
+    psMapLayers['🛒 Markets'] = L.layerGroup(MARKETS.map(m => L.marker([m.lat, m.lng], { icon: pmPinIcon('🛒', '#2b6f86') }).bindPopup('<b>🛒 ' + m.name + '</b>')));
+    psMapLayers['🌳 Parks'] = L.layerGroup(PARKS_REF.map(p => L.marker([p.lat, p.lng], { icon: pmPinIcon('🌳', '#2f8f5b') }).bindPopup('<b>🌳 ' + p.name + '</b>')));
+    psPropertyLayer = L.layerGroup();
+    psMapLayers['📍 Properties'] = psPropertyLayer;
+
+    const chipsDiv = document.getElementById('psMapChips');
+    Object.entries(psMapLayers).forEach(([name, layer]) => {
+      layer.addTo(psMap);
+      const chip = document.createElement('button');
+      chip.className = 'ps-map-chip on';
+      chip.textContent = name;
+      chip.onclick = function() {
+        if (psMap.hasLayer(layer)) { psMap.removeLayer(layer); chip.classList.remove('on'); }
+        else { layer.addTo(psMap); chip.classList.add('on'); }
+      };
+      chipsDiv.appendChild(chip);
+    });
+
+    psRenderPropertyPins();
+  }
+
+  function psRenderPropertyPins() {
+    if (!psPropertyLayer) return;
+    psPropertyLayer.clearLayers();
+    properties.forEach(p => {
+      const coords = psExtractLatLng(p);
+      if (!coords) return;
+      const color = STATUS_PIN_COLORS[(p.status || 'researching').toLowerCase()] || STATUS_PIN_COLORS.researching;
+      const chip = shortChip(p);
+      const marker = L.marker([coords.lat, coords.lng], { icon: pmPinIcon('📍', color, 28) })
+        .bindPopup('<b>' + esc(p.nickname) + '</b><br><span style="color:#5a6472;">' + esc(p.status) + '</span><br>' + esc(chip));
+      psPropertyLayer.addLayer(marker);
+    });
+  }
+
+  window.psSwitchTab = function(tab) {
+    const propsBtn = document.getElementById('psTabProperties');
+    const mapBtn = document.getElementById('psTabMap');
+    const propsPanel = document.getElementById('psPanelProperties');
+    const mapPanel = document.getElementById('psPanelMap');
+    if (tab === 'map') {
+      propsBtn.classList.remove('active'); mapBtn.classList.add('active');
+      propsPanel.style.display = 'none'; mapPanel.style.display = 'block';
+      psInitMap();
+      setTimeout(() => { psMap.invalidateSize(); psRenderPropertyPins(); }, 50);
+    } else {
+      mapBtn.classList.remove('active'); propsBtn.classList.add('active');
+      mapPanel.style.display = 'none'; propsPanel.style.display = 'block';
+    }
+  };
+  document.getElementById('psTabProperties').addEventListener('click', () => psSwitchTab('properties'));
+  document.getElementById('psTabMap').addEventListener('click', () => psSwitchTab('map'));
 
   window.render = render;
   loadAll();
